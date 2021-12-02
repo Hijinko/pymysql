@@ -42,6 +42,9 @@ class TestConnection(unittest.TestCase):
         self._conn.close()
 
     def test_create_table(self):
+        '''
+        @brief: test the creation of a table
+        '''
         self._conn.create_table(self._table, self._keys)
         query = f"DESCRIBE {self._table}"
         descriptions = self._conn.custom_query(query)
@@ -51,12 +54,18 @@ class TestConnection(unittest.TestCase):
         self._conn.close()
 
     def test_insert(self):
+        '''
+        @brief test the ability to insert data into the table
+        '''
         self._conn.insert(self._values)
         names = self._conn.select_all()
         self.assertTrue(_key_in_return(names, self._values[0][0]))
         self._conn.close()
 
     def test_select_all(self):
+        '''
+        @brief test the ability to select all the data from a table
+        '''
         data = self._conn.select_all()
         self.assertTrue(_key_in_return(data, self._values[0][0]))
         self.assertTrue(_key_in_return(data, self._values[0][1]))
@@ -64,13 +73,23 @@ class TestConnection(unittest.TestCase):
         self.assertTrue(_key_in_return(data, self._values[1][1]))
         self._conn.close()
          
-"""
     def test_clear_table(self):
+        '''
+        @brief test the ability to clear a table of all its contents 
+        '''
         self._conn.clear_table()
+        data = self._conn.select_all()
+        self.assertFalse(_key_in_return(data, self._values[0][0]))
 
     def test_delete_table(self):
+        '''
+        @brief test the ability to delete a table
+        '''
         self._conn.delete_table()
-"""
+        query = 'SHOW TABLES'
+        tables = self._conn.custom_query(query)
+        self.assertFalse(_key_in_return(tables, self._database))
+
 
 if __name__ == '__main__':
     unittest.main()
