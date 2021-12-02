@@ -13,9 +13,15 @@ class TestConnection(unittest.TestCase):
         '''
         @brief: create the connection class for each tests
         '''
+        self._values = [('Jon', 'Doe'), ('Jane', 'Doe')]
+        self._keys = [('id INT NOT NULL PRIMARY KEY AUTO_INCREMENT'),
+                      ('fname VARCHAR(20) NOT NULL'),
+                      ('lname VARCHAR(20) NOT NULL')]
         self._table = 'test_table'
         self._database = 'Test'
-        self._conn = Connection(self._database, password_required=True)
+        self._conn = Connection(password_required=True)
+        self._conn.create_database(self._database)
+        self._conn.create_table(self._table, self._keys)
         self._conn.table = self._table
 
     def test_connection_init(self):
@@ -36,10 +42,7 @@ class TestConnection(unittest.TestCase):
         self._conn.close()
 
     def test_create_table(self):
-        keys = [('id INT NOT NULL PRIMARY KEY AUTO_INCREMENT'),
-                ('fname VARCHAR(20) NOT NULL'),
-                ('lname VARCHAR(20) NOT NULL')]
-        self._conn.create_table(self._table, keys)
+        self._conn.create_table(self._table, self._keys)
         query = f"DESCRIBE {self._table}"
         descriptions = self._conn.custom_query(query)
         self.assertTrue(_key_in_return(descriptions, 'id'))
@@ -48,16 +51,20 @@ class TestConnection(unittest.TestCase):
         self._conn.close()
 
     def test_insert(self):
-        values = [('Jon', 'Doe'), ('Jane', 'Doe')]
-        self._conn.insert(values)
+        self._conn.insert(self._values)
         names = self._conn.select_all()
-        self.assertTrue(_key_in_return(names, values[0][0]))
+        self.assertTrue(_key_in_return(names, self._values[0][0]))
         self._conn.close()
 
-"""
     def test_select_all(self):
-        self._conn.select_all()
-
+        data = self._conn.select_all()
+        self.assertTrue(_key_in_return(data, self._values[0][0]))
+        self.assertTrue(_key_in_return(data, self._values[0][1]))
+        self.assertTrue(_key_in_return(data, self._values[1][0]))
+        self.assertTrue(_key_in_return(data, self._values[1][1]))
+        self._conn.close()
+         
+"""
     def test_clear_table(self):
         self._conn.clear_table()
 
