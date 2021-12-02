@@ -1,6 +1,7 @@
 import unittest
 from pymysql import Connection
 
+
 def _key_in_return(data, key):
     for value in data:
         if key in value:
@@ -72,10 +73,10 @@ class TestConnection(unittest.TestCase):
         self.assertTrue(_key_in_return(data, self._values[1][0]))
         self.assertTrue(_key_in_return(data, self._values[1][1]))
         self._conn.close()
-         
+
     def test_clear_table(self):
         '''
-        @brief test the ability to clear a table of all its contents 
+        @brief test the ability to clear a table of all its contents
         '''
         self._conn.clear_table()
         data = self._conn.select_all()

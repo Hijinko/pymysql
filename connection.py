@@ -6,7 +6,7 @@ import mysql.connector
 class Connection:
     '''
     @brief: class for connecting to an sql database
-    @parm database string name of the database to connect to 
+    @parm database string name of the database to connect to
     @param password_required boolean value to specifify if the mysql connection
      requries a password
     @param password string that is the password for the database
@@ -19,7 +19,8 @@ class Connection:
         self._get_password()
         # if a database name is passed then create a new connection
         if database is not None:
-            self.get_connection(database) # creates the connection to the database
+            # creates the connection to the database
+            self.get_connection(database)
 
     @property
     def table(self):
@@ -51,7 +52,7 @@ class Connection:
             self._password = data[1].strip().strip('"')
         elif self._password is None and password_required:
             # the conf file is not present and a password is required
-            elf._password = getpass.getpass() 
+            elf._password = getpass.getpass()
         else:
             # the conf file is not present and a password is not required
             # or was given
@@ -94,22 +95,22 @@ class Connection:
 
     def create_table(self, table_name, keys):
         '''
-        @brief creates a table in the class database as long as the table does 
+        @brief creates a table in the class database as long as the table does
          notalready exist
         @param table_name string name of the table to create
-        @parm keys a collection of lists or tuples that has the keys for 
+        @parm keys a collection of lists or tuples that has the keys for
          the table
         '''
         self._table = table_name
         sql = (f"CREATE TABLE IF NOT EXISTS {self._table}"
-              f"({','.join(keys)})")
+               f"({','.join(keys)})")
         with self._connection.cursor() as cursor:
             cursor.execute(sql)
 
     def insert(self, values, auto_key=True):
         '''
         @brief adds values to the class table
-        @param values list or tuple that has the values to insert 
+        @param values list or tuple that has the values to insert
         @param auto_key if set to False then the format string will account for
          an auto incrementing key else only specific values will be counted
         '''
@@ -118,7 +119,7 @@ class Connection:
             fmt = f"0, {'%s, ' * len(values[0])}".strip().strip(',')
         else:
             fmt = f"{'%s, ' * len(values[0])}".strip().strip(',')
-        sql = f"INSERT INTO {self._table} VALUES ({fmt})" 
+        sql = f"INSERT INTO {self._table} VALUES ({fmt})"
         with self._connection.cursor() as cursor:
             cursor.executemany(sql, values)
         self._connection.commit()
@@ -126,7 +127,7 @@ class Connection:
     def select_all(self):
         '''
         @brief gets all the values from the table
-        @return returns all the table rows in a 
+        @return returns all the table rows in a
         '''
         sql = f"SELECT * FROM {self._table}"
         with self._connection.cursor() as cursor:
@@ -163,12 +164,13 @@ class Connection:
             cursor.execute(sql)
             data = [row for index, row in enumerate(cursor.fetchall())]
         return data
-   
+
     def close(self):
         '''
         @brief closes the class connection
         '''
         self._connection.close()
+
 
 if __name__ == '__main__':
     conn = Connection('kellis')
