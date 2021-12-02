@@ -16,6 +16,7 @@ class TestConnection(unittest.TestCase):
         self._table = 'test_table'
         self._database = 'Test'
         self._conn = Connection(self._database, password_required=True)
+        self._conn.table = self._table
 
     def test_connection_init(self):
         '''
@@ -50,7 +51,12 @@ class TestConnection(unittest.TestCase):
     def test_insert(self):
         values = [('Jon', 'Doe'), ('Jane', 'Doe')]
         self._conn.insert(values)
-
+        query = "SELECT fname from {self._table}"
+        names = self._conn.custom_query(query)
+        print(f"NAMES ARE {names}")
+        self.assertTrue(_key_in_return(names, values[0][0]))
+        self._conn.close()
+        
     def test_select_all(self):
         self._conn.select_all()
 

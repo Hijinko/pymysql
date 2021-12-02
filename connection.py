@@ -20,7 +20,6 @@ class Connection:
         # if a database name is passed then create a new connection
         if database is not None:
             self.get_connection(database) # creates the connection to the database
-            self._cursor = self._connection.cursor()
 
     @property
     def table(self):
@@ -31,8 +30,9 @@ class Connection:
     def table(self, table_name):
         '''@brief sets the current table of the connection'''
         sql = "SHOW TABLES"
-        self._cursor.execute(sql)
-        tables = [row for index, row in enumerate(self._cursor.fetchall())]
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
+            tables = [row for index, row in enumerate(cursor.fetchall())]
         for table in tables:
             if table_name in table:
                 self._table = table_name
@@ -84,10 +84,10 @@ class Connection:
             config['password'] = self._password
         sql = f"CREATE DATABASE IF NOT EXISTS {database}"
         self._connection = mysql.connector.connect(**config)
-        self._cursor = self._connection.cursor()
-        self._cursor.execute(sql)
+        with self._connection.cursor() as cursor:
+            cursor = self._connection.cursor()
+            cursor.execute(sql)
         self._connection.commit()
-        self._cursor.close()
         self._connection.close()
         # now that the database is createad connect to the database
         self.get_connection(database)
@@ -103,7 +103,8 @@ class Connection:
         self._table = table_name
         sql = (f"CREATE TABLE IF NOT EXISTS {self._table}"
               f"({','.join(keys)})")
-        self._cursor.execute(sql)
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
 
     def insert(self, values, auto_key=True):
         '''
@@ -118,7 +119,8 @@ class Connection:
         else:
             fmt = f"0, {'%s, ' * len(values[0])}".strip().strip(',')
         sql = f"INSERT INTO {self._table} VALUES ({fmt})" 
-        self._cursor.executemany(sql, values)
+        with self._connection.cursor() as cursor:
+            cursor.executemany(sql, values)
         self._connection.commit()
 
     def select_all(self):
@@ -127,8 +129,9 @@ class Connection:
         @return returns all the table rows in a 
         '''
         sql = f"SELECT * FROM {self._table}"
-        self._cursor.execute(sql)
-        data = [row for index, row in enumerate(self._cursor.fetchall())]
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
+            data = [row for index, row in enumerate(cursor.fetchall())]
         return data
 
     def clear_table(self):
@@ -136,7 +139,8 @@ class Connection:
         @brief deletes all the records from the class table
         '''
         sql = f"DELETE FROM {self._table}"
-        self._cursor.execute(sql)
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
         self._connection.commit()
 
     def delete_table(self):
@@ -144,7 +148,8 @@ class Connection:
         @brief drops the class table from the databse
         '''
         sql = f"DROP TABLE IF EXISTS {self._table}"
-        self._cursor.execute(sql)
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
         self._connection.commit()
 
     def custom_query(self, sql):
@@ -154,16 +159,15 @@ class Connection:
          the sql must be a query that retuns data such as SHOW, SELECT
         @return a list that has the query data
         '''
-        self._cursor = self._connection.cursor()
-        self._cursor.execute(sql)
-        data = [row for index, row in enumerate(self._cursor.fetchall())]
+        with self._connection.cursor() as cursor:
+            cursor.execute(sql)
+            data = [row for index, row in enumerate(cursor.fetchall())]
         return data
    
     def close(self):
         '''
         @brief closes the class connection
         '''
-        self._cursor.close()
         self._connection.close()
 
 if __name__ == '__main__':
