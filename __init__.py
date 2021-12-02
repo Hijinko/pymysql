@@ -1,1 +1,1 @@
-from py_mysql.connection import Connection
+from pymysql.connection import Connection
