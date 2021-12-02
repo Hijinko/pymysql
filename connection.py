@@ -18,10 +18,26 @@ class Connection:
         self._password = password
         self._get_password()
         # if a database name is passed then create a new connection
-        if database:
-            self._get_connection() # creates the connection to the database
+        if database is not None:
+            self.get_connection(database) # creates the connection to the database
             self._cursor = self._connection.cursor()
-    
+
+    @property
+    def table(self):
+        '''@brief gets the current table of the connection'''
+        return self._table
+
+    @table.setter
+    def table(self, table_name):
+        '''@brief sets the current table of the connection'''
+        sql = "SHOW TABLES"
+        self._cursor.execute(sql)
+        tables = [row for index, row in enumerate(self._cursor.fetchall())]
+        for table in tables:
+            if table_name in table:
+                self._table = table_name
+                break
+
     def _get_password(self):
         '''
         @brief: sets the password of the database user if it is required
@@ -41,13 +57,18 @@ class Connection:
             # or was given
             self._password = password
 
-    def _get_connection(self):
+    def get_connection(self, database=None):
         '''
         @brief: creates the connection to the sql database, must be run before
          any other functions can be run on the class
+        @param database string that is the name of the database to connect
+         to
         '''
-        config = {'user': getpass.getuser(), 
-                  'database': self._database}
+        config = {'user': getpass.getuser()}
+        if database is not None:
+            config['database'] = database
+            self._database = database
+
         if self._password is not None:
             config['password'] = self._password
         self._connection = mysql.connector.connect(**config)
@@ -69,7 +90,7 @@ class Connection:
         self._cursor.close()
         self._connection.close()
         # now that the database is createad connect to the database
-        self._get_connection()
+        self.get_connection(database)
 
     def create_table(self, table_name, keys):
         '''
@@ -107,7 +128,7 @@ class Connection:
         '''
         sql = f"SELECT * FROM {self._table}"
         self._cursor.execute(sql)
-        data = (row for index, row in enumerate(self._cursor.fetchall()))
+        data = [row for index, row in enumerate(self._cursor.fetchall())]
         return data
 
     def clear_table(self):
@@ -126,6 +147,18 @@ class Connection:
         self._cursor.execute(sql)
         self._connection.commit()
 
+    def custom_query(self, sql):
+        '''
+        @brief runs a custom_query on the connection
+        @param sql string query to run on the connection
+         the sql must be a query that retuns data such as SHOW, SELECT
+        @return a list that has the query data
+        '''
+        self._cursor = self._connection.cursor()
+        self._cursor.execute(sql)
+        data = [row for index, row in enumerate(self._cursor.fetchall())]
+        return data
+   
     def close(self):
         '''
         @brief closes the class connection
