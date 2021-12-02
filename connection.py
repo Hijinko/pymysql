@@ -37,12 +37,18 @@ class Connection:
               f"({','.join(keys)})")
         self._cursor.execute(sql)
 
-    def insert(self, fmt, values):
+    def insert(self, values, auto_key=True):
         '''
         @brief adds values to the class table
-        @param fmt format string for the sql 
         @param values list or tuple that has the values to insert 
+        @param auto_key if set to False then the format string will account for
+         an auto incrementing key else only specific values will be counted
         '''
+        # get the format string for the insert
+        if auto_key:
+            fmt = f"{'%s, ' * len(values[0])}".strip().strip(',')
+        else:
+            fmt = f"0, {'%s, ' * len(values[0])}".strip().strip(',')
         sql = f"INSERT INTO {self._table} VALUES ({fmt})" 
         self._cursor.executemany(sql, values)
         self._connection.commit()
@@ -56,7 +62,6 @@ class Connection:
         self._cursor.execute(sql)
         data = (row for index, row in enumerate(self._cursor.fetchall()))
         return data
-
 
     def clear_table(self):
         '''
