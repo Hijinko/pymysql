@@ -115,9 +115,9 @@ class Connection:
         '''
         # get the format string for the insert
         if auto_key:
-            fmt = f"{'%s, ' * len(values[0])}".strip().strip(',')
-        else:
             fmt = f"0, {'%s, ' * len(values[0])}".strip().strip(',')
+        else:
+            fmt = f"{'%s, ' * len(values[0])}".strip().strip(',')
         sql = f"INSERT INTO {self._table} VALUES ({fmt})" 
         with self._connection.cursor() as cursor:
             cursor.executemany(sql, values)
